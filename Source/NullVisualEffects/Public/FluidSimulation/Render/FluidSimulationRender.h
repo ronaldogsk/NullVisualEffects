@@ -11,12 +11,21 @@ struct FFluidSimulationVertex
 public:
 
     /** Velocity */
-    FVector Velocity;
+    FVector2D Velocity;
+
+    /** Velocity */
+    FVector2D Density;
 
     /** Constructor */
     FFluidSimulationVertex()
-        : Velocity(FVector::ZeroVector)
+        : Velocity(FVector2D::ZeroVector)
+        , Density(FVector2D::ZeroVector)
     {}
+};
+
+struct FFluidSimulationForce
+{
+    //FVector
 };
 
 UCLASS()
@@ -69,7 +78,7 @@ private:
 private:
 
     /** Update fluid render thread implementation */
-    static void UpdateFluid_RenderThread(const float InDeltaTime, const int32 InSimulationGridSize, const FUnorderedAccessViewRHIRef& InUAV, FRHICommandListImmediate& RHICmdList);
+    static void UpdateFluid_RenderThread(const float InDeltaTime, const int32 InSimulationGridSize, const FUnorderedAccessViewRHIRef& InCurrentUAV, const FUnorderedAccessViewRHIRef& InPreviousUAV, FRHICommandListImmediate& RHICmdList);
 
     /** Draw to render target render thread implementation */
     static void DrawToRenderTarget_RenderThread(class UTextureRenderTarget2D* InRenderTarget, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList);
@@ -89,6 +98,12 @@ private:
 
     /** Vertex buffer unordered access view */
     FUnorderedAccessViewRHIRef VertexBufferUAV;
+
+    /** Spare vertex buffer */
+    FVertexBufferRHIRef SpareVertexBuffer;
+
+    /** Spare vertex buffer unordered access view */
+    FUnorderedAccessViewRHIRef SpareVertexBufferUAV;
 
     /** Render command fence */
     FRenderCommandFence RenderFence;

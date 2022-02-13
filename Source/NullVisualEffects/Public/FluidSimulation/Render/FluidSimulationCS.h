@@ -15,7 +15,9 @@ public:
     SHADER_USE_PARAMETER_STRUCT(FFluidSimulationCS, FGlobalShader);
 
     BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
-        SHADER_PARAMETER_UAV(RWBuffer<float>, FluidData)
+        SHADER_PARAMETER_UAV(RWBuffer<float>, CurrentFluidData)
+        SHADER_PARAMETER_UAV(RWBuffer<float>, PreviousFluidData)
+        SHADER_PARAMETER(int32, SimulationGridSize)
         SHADER_PARAMETER(float, DeltaTime)
     END_SHADER_PARAMETER_STRUCT()
 

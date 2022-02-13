@@ -4,12 +4,14 @@
 #include "FluidSimulation/Render/FluidSimulationCS.h"
 #include "FluidSimulation/Render/FluidSimulationDrawCS.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Library/NullVisualEffectsFunctionLibrary.h"
 #include "RenderGraphUtils.h"
 #include "RenderTargetPool.h"
 
 const FVertexDeclarationElementList UFluidSimulationRender::VertexSimulationDataDeclaration
 {
-    FVertexElement(0, offsetof(FFluidSimulationVertex, Velocity), EVertexElementType::VET_Float3, 0, sizeof(FFluidSimulationVertex))
+    FVertexElement(0, offsetof(FFluidSimulationVertex, Velocity),   EVertexElementType::VET_Float2, 0, sizeof(FFluidSimulationVertex)),
+    FVertexElement(0, offsetof(FFluidSimulationVertex, Density),    EVertexElementType::VET_Float2, 1, sizeof(FFluidSimulationVertex))
 };
 
 UFluidSimulationRender::UFluidSimulationRender()
@@ -40,6 +42,7 @@ void UFluidSimulationRender::Tick(float DeltaTime)
 
     if (bIsInit)
     {
+        UNullVisualEffectsFunctionLibrary::CopyVertexBuffer(VertexBuffer, SpareVertexBuffer);
         UpdateFluid(DeltaTime);
     }
 }
@@ -70,6 +73,9 @@ bool UFluidSimulationRender::Init(const int32 InSimulationGridSize)
 
     VertexBuffer.SafeRelease();
     VertexBufferUAV.SafeRelease();
+    SpareVertexBuffer.SafeRelease();
+    SpareVertexBufferUAV.SafeRelease();
+
     SimulationGridSize = InSimulationGridSize;
     bIsInit = SimulationGridSize > 0;
 
@@ -94,6 +100,9 @@ bool UFluidSimulationRender::Init(const int32 InSimulationGridSize)
 
                 VertexBuffer = RHICreateVertexBuffer(VertexBufferData.GetResourceDataSize(), BufferUsage, ResourceCreateInfo);
                 VertexBufferUAV = RHICreateUnorderedAccessView(VertexBuffer.GetReference(), PF_R32_FLOAT);
+
+                SpareVertexBuffer = RHICreateVertexBuffer(VertexBufferData.GetResourceDataSize(), BufferUsage, ResourceCreateInfo);
+                SpareVertexBufferUAV = RHICreateUnorderedAccessView(SpareVertexBuffer.GetReference(), PF_R32_FLOAT);
             }
         );
     }
@@ -109,12 +118,13 @@ void UFluidSimulationRender::UpdateFluid(const float InDeltaTime)
     (
         [
             DeltaTime           = InDeltaTime,
-            UAV                 = VertexBufferUAV,
+            CurrentUAV          = VertexBufferUAV,
+            PreviousUAV         = SpareVertexBufferUAV,
             SimulationGridSize  = SimulationGridSize
         ]
         (FRHICommandListImmediate& RHICmdList)
         {
-            UpdateFluid_RenderThread(DeltaTime, SimulationGridSize, UAV, RHICmdList);
+            UpdateFluid_RenderThread(DeltaTime, SimulationGridSize, CurrentUAV, PreviousUAV, RHICmdList);
         }
     );
 }
@@ -137,14 +147,16 @@ void UFluidSimulationRender::DrawToRenderTarget(class UTextureRenderTarget2D* In
     }
 }
 
-void UFluidSimulationRender::UpdateFluid_RenderThread(const float InDeltaTime, const int32 InSimulationGridSize, const FUnorderedAccessViewRHIRef& InUAV, FRHICommandListImmediate& RHICmdList)
+void UFluidSimulationRender::UpdateFluid_RenderThread(const float InDeltaTime, const int32 InSimulationGridSize, const FUnorderedAccessViewRHIRef& InCurrentUAV, const FUnorderedAccessViewRHIRef& InPreviousUAV, FRHICommandListImmediate& RHICmdList)
 {
     check(IsInRenderingThread());
     QUICK_SCOPE_CYCLE_COUNTER(STAT_FluidSimulationRender_UpdateFluid_RenderThread);
     SCOPED_DRAW_EVENT(RHICmdList, FluidSimulationRender_UpdateFluid_RenderThread);
 
     FFluidSimulationCS::FParameters Params;
-    Params.FluidData = InUAV;
+    Params.CurrentFluidData = InCurrentUAV;
+    Params.PreviousFluidData = InPreviousUAV;
+    Params.SimulationGridSize = InSimulationGridSize;
     Params.DeltaTime = InDeltaTime;
 
     TShaderMapRef<FFluidSimulationCS> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));

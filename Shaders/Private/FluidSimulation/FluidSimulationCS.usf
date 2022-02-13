@@ -4,14 +4,25 @@
 
 #include "/Engine/Public/Platform.ush"
 
-RWBuffer<float> FluidData;
+RWBuffer<float> CurrentFluidData;
+RWBuffer<float> PreviousFluidData;
+int SimulationGridSize;
+float DeltaTime;
 
 [numthreads(CG_SIZE_X, 1, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
-    const uint Current = DTid.x * 3;
+    // SV_DispatchThreadID.x * sizeof(FFluidSimulationVertex)
+    const uint Current = DTid.x * 4;
 
-    FluidData[Current + 0] = 0.0f;
-    FluidData[Current + 1] = 0.0f;
-    FluidData[Current + 2] = 0.0f;
+    const float2 PreviousVelocity = float2(PreviousFluidData[Current + 0], PreviousFluidData[Current + 1]);
+    const float2 PreviousDensity = float2(PreviousFluidData[Current + 2], PreviousFluidData[Current + 3]);
+
+    float2 NextVelocity = float2(0.0f, 0.0f);
+    float2 NextDensity = float2(0.0f, 0.0f);
+
+    CurrentFluidData[Current + 0] = NextVelocity.x;
+    CurrentFluidData[Current + 1] = NextVelocity.y;
+    CurrentFluidData[Current + 2] = NextDensity.x;
+    CurrentFluidData[Current + 3] = NextDensity.y;
 }
