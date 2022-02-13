@@ -1,0 +1,17 @@
+// Copyright (C) Ronaldo Veloso. All Rights Reserved.
+
+#pragma once
+
+#include "/Engine/Public/Platform.ush"
+
+RWBuffer<float> FluidData;
+
+[numthreads(CG_SIZE_X, 1, 1)]
+void MainCS(uint3 DTid : SV_DispatchThreadID)
+{
+    const uint Current = DTid.x * 3;
+
+    FluidData[Current + 0] = 0.0f;
+    FluidData[Current + 1] = 0.0f;
+    FluidData[Current + 2] = 0.0f;
+}

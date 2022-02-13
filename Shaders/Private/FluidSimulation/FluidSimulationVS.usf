@@ -1,0 +1,5 @@
+// Copyright (C) Ronaldo Veloso. All Rights Reserved.
+
+#pragma once
+
+#include "/Engine/Public/Platform.ush"
