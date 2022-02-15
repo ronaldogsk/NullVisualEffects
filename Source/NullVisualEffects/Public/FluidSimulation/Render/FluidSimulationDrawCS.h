@@ -17,6 +17,8 @@ public:
     BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
         SHADER_PARAMETER_UAV(RWTexture2D<float>, OutTexture)
         SHADER_PARAMETER_UAV(RWBuffer<float>, FluidData)
+        SHADER_PARAMETER(int32, SimulationGridSize)
+        SHADER_PARAMETER(float, SimulationGridSizeRecip)
     END_SHADER_PARAMETER_STRUCT()
 
 public:

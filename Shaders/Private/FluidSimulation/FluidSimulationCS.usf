@@ -7,22 +7,24 @@
 RWBuffer<float> CurrentFluidData;
 RWBuffer<float> PreviousFluidData;
 int SimulationGridSize;
+float SimulationGridSizeRecip;
+float FluidDifusion;
+float FluidViscosity;
 float DeltaTime;
 
-[numthreads(CG_SIZE_X, 1, 1)]
+[numthreads(1, 1, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
     // SV_DispatchThreadID.x * sizeof(FFluidSimulationVertex)
-    const uint Current = DTid.x * 4;
+    const uint Current = DTid.x * 3;
 
     const float2 PreviousVelocity = float2(PreviousFluidData[Current + 0], PreviousFluidData[Current + 1]);
-    const float2 PreviousDensity = float2(PreviousFluidData[Current + 2], PreviousFluidData[Current + 3]);
+    const float PreviousDensity = PreviousFluidData[Current + 2];
 
-    float2 NextVelocity = float2(1.0f, 0.0f);
-    float2 NextDensity = float2(0.0f, 0.0f);
+    float2 NextVelocity = PreviousVelocity;
+    float NextDensity = 0.0f;
 
     CurrentFluidData[Current + 0] = NextVelocity.x;
     CurrentFluidData[Current + 1] = NextVelocity.y;
-    CurrentFluidData[Current + 2] = NextDensity.x;
-    CurrentFluidData[Current + 3] = NextDensity.y;
+    CurrentFluidData[Current + 2] = NextDensity;
 }

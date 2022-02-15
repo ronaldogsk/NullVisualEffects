@@ -54,9 +54,10 @@ void AFluidSimulationActor::InitResources()
     // Temporary
     // FluidRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(this, RenderTargetSize, RenderTargetSize, ETextureRenderTargetFormat::RTF_RGBA8, FLinearColor::White);
 
-    FluidSimulationRender = NewObject<UFluidSimulationRender>(this, FName(TEXT("FluidSimulationRender")), RF_Transient);
-    FluidSimulationRender->Init(SimulationGridSize);
     FluidRenderTarget = UKismetRenderingLibrary::CreateRenderTarget2D(this, SimulationGridSize, SimulationGridSize, ETextureRenderTargetFormat::RTF_RGBA8, FLinearColor::Black);
+    FluidSimulationRender = NewObject<UFluidSimulationRender>(this, FName(TEXT("FluidSimulationRender")), RF_Transient);
+    FluidSimulationRender->SetRenderTarget(FluidRenderTarget);
+    FluidSimulationRender->Init(SimulationGridSize);
 
     if (StaticMeshComponent != nullptr)
     {

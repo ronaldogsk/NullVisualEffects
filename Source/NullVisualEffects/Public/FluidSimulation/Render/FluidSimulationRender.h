@@ -10,12 +10,6 @@ struct FFluidSimulationVertex
 {
 public:
 
-    /** Vertex ID */
-    uint32 X;
-
-    /** Vertex ID */
-    uint32 Y;
-
     /** Velocity */
     FVector2D Velocity;
 
@@ -24,23 +18,17 @@ public:
 
     /** Constructor */
     FFluidSimulationVertex()
-        : X(0)
-        , Y(0)
-        , Velocity(FVector2D::ZeroVector)
+        : Velocity(FVector2D::ZeroVector)
         , Density(0.0f)
     {}
 
     /** Constructor */
     FFluidSimulationVertex
     (
-        const uint32 InX,
-        const uint32 InY,
         const FVector2D& InVelocity,
         const float InDensity
     )
-        : X(InX)
-        , Y(InY)
-        , Velocity(FVector2D::ZeroVector)
+        : Velocity(InVelocity)
         , Density(InDensity)
     {}
 };
@@ -92,6 +80,9 @@ public:
      */
     void DrawToRenderTarget(class UTextureRenderTarget2D* InRenderTarget);
 
+    /** Sets the output render target */
+    void SetRenderTarget(class UTextureRenderTarget2D* InRenderTarget);
+
 private:
 
     /** Updates the fluid */
@@ -100,10 +91,10 @@ private:
 private:
 
     /** Update fluid render thread implementation */
-    static void UpdateFluid_RenderThread(const float InDeltaTime, const int32 InSimulationGridSize, const FUnorderedAccessViewRHIRef& InCurrentUAV, const FUnorderedAccessViewRHIRef& InPreviousUAV, FRHICommandListImmediate& RHICmdList);
+    static void UpdateFluid_RenderThread(const int32 InSimulationGridSize, const float InFluidDifusion, const float InFluidViscosity, const float InDeltaTime, const FUnorderedAccessViewRHIRef& InCurrentUAV, const FUnorderedAccessViewRHIRef& InPreviousUAV, FRHICommandListImmediate& RHICmdList);
 
     /** Draw to render target render thread implementation */
-    static void DrawToRenderTarget_RenderThread(class UTextureRenderTarget2D* InRenderTarget, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList);
+    static void DrawToRenderTarget_RenderThread(class UTextureRenderTarget2D* InRenderTarget, const int32 InSimulationGridSize, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList);
 
 protected:
 
@@ -115,6 +106,9 @@ protected:
 
     /**  */
     float FluidViscosity;
+
+    /** Output render target */
+    class UTextureRenderTarget2D* OutputRenderTarget;
 
 private:
 

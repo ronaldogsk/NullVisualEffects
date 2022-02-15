@@ -18,6 +18,9 @@ public:
         SHADER_PARAMETER_UAV(RWBuffer<float>, CurrentFluidData)
         SHADER_PARAMETER_UAV(RWBuffer<float>, PreviousFluidData)
         SHADER_PARAMETER(int32, SimulationGridSize)
+        SHADER_PARAMETER(float, SimulationGridSizeRecip)
+        SHADER_PARAMETER(float, FluidDifusion)
+        SHADER_PARAMETER(float, FluidViscosity)
         SHADER_PARAMETER(float, DeltaTime)
     END_SHADER_PARAMETER_STRUCT()
 
