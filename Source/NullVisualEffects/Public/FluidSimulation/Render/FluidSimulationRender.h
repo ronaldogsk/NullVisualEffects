@@ -10,16 +10,38 @@ struct FFluidSimulationVertex
 {
 public:
 
+    /** Vertex ID */
+    uint32 X;
+
+    /** Vertex ID */
+    uint32 Y;
+
     /** Velocity */
     FVector2D Velocity;
 
-    /** Velocity */
-    FVector2D Density;
+    /** Density */
+    float Density;
 
     /** Constructor */
     FFluidSimulationVertex()
-        : Velocity(FVector2D::ZeroVector)
-        , Density(FVector2D::ZeroVector)
+        : X(0)
+        , Y(0)
+        , Velocity(FVector2D::ZeroVector)
+        , Density(0.0f)
+    {}
+
+    /** Constructor */
+    FFluidSimulationVertex
+    (
+        const uint32 InX,
+        const uint32 InY,
+        const FVector2D& InVelocity,
+        const float InDensity
+    )
+        : X(InX)
+        , Y(InY)
+        , Velocity(FVector2D::ZeroVector)
+        , Density(InDensity)
     {}
 };
 
@@ -87,6 +109,12 @@ protected:
 
     /** Is the render init */
     bool bIsInit;
+
+    /**  */
+    float FluidDifusion;
+
+    /**  */
+    float FluidViscosity;
 
 private:
 

@@ -84,6 +84,20 @@ void AFluidSimulationActor::InitResources()
     }
 }
 
+void AFluidSimulationActor::RegisterBody(const FVector& InCurrentLocation, const FVector& InPreviousLocation, const FVector& InVelocity, const float InStrength)
+{
+    const FVector& CurrentLocationDelta = GetActorLocation() - InCurrentLocation;
+    const FVector& CurrentLocationNormalizedDelta = static_cast<FVector>(CurrentLocationDelta / SimulationGridSize); // #TODO: Implement size squared.
+
+    const FVector& PreviousLocationDelta = GetActorLocation() - InPreviousLocation;
+    const FVector& PreviousLocationNormalizedDelta = static_cast<FVector>(PreviousLocationDelta / SimulationGridSize); // #TODO: Implement size squared.
+
+    if (CurrentLocationNormalizedDelta.X <= 1.0f && CurrentLocationNormalizedDelta.X >= -1.0f && CurrentLocationNormalizedDelta.Y <= 1.0f && CurrentLocationNormalizedDelta.Y >= -1.0f)
+    {
+
+    }
+}
+
 void AFluidSimulationActor::Draw()
 {
     FluidSimulationRender->DrawToRenderTarget(FluidRenderTarget);

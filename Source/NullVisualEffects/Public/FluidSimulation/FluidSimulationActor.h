@@ -32,6 +32,9 @@ public:
     UFUNCTION(CallInEditor, Category = "FluidSimulation")
     void InitResources();
 
+
+    void RegisterBody(const FVector& InCurrentLocation, const FVector& InPreviousLocation, const FVector& InVelocity, const float InStrength);
+
     /** */
     UFUNCTION(CallInEditor, Category = "FluidSimulation")
     void Draw();

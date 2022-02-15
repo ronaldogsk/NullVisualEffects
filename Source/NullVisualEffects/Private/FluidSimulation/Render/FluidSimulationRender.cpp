@@ -10,8 +10,10 @@
 
 const FVertexDeclarationElementList UFluidSimulationRender::VertexSimulationDataDeclaration
 {
-    FVertexElement(0, offsetof(FFluidSimulationVertex, Velocity),   EVertexElementType::VET_Float2, 0, sizeof(FFluidSimulationVertex)),
-    FVertexElement(0, offsetof(FFluidSimulationVertex, Density),    EVertexElementType::VET_Float2, 1, sizeof(FFluidSimulationVertex))
+    FVertexElement(0, offsetof(FFluidSimulationVertex, X)           , EVertexElementType::VET_UInt  , 0, sizeof(FFluidSimulationVertex)),
+    FVertexElement(0, offsetof(FFluidSimulationVertex, Y)           , EVertexElementType::VET_UInt  , 1, sizeof(FFluidSimulationVertex)),
+    FVertexElement(0, offsetof(FFluidSimulationVertex, Velocity)    , EVertexElementType::VET_Float2, 2, sizeof(FFluidSimulationVertex)),
+    FVertexElement(0, offsetof(FFluidSimulationVertex, Density)     , EVertexElementType::VET_Float1, 3, sizeof(FFluidSimulationVertex))
 };
 
 UFluidSimulationRender::UFluidSimulationRender()
@@ -91,7 +93,7 @@ bool UFluidSimulationRender::Init(const int32 InSimulationGridSize)
                 {
                     for (int32 j = 0; j < InSimulationGridSize; ++j)
                     {
-                        VertexBufferData.Add(FFluidSimulationVertex());
+                        VertexBufferData.Emplace(FFluidSimulationVertex(static_cast<uint32>(i), static_cast<uint32>(j), FVector2D::ZeroVector, 0.0f));
                     }
                 }
 
@@ -105,9 +107,9 @@ bool UFluidSimulationRender::Init(const int32 InSimulationGridSize)
                 SpareVertexBufferUAV = RHICreateUnorderedAccessView(SpareVertexBuffer.GetReference(), PF_R32_FLOAT);
             }
         );
-    }
 
-    FlushRenderingCommands();
+        FlushRenderingCommands();
+    }
 
     return bIsInit;
 }
