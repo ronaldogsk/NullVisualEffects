@@ -12,19 +12,82 @@ float FluidDifusion;
 float FluidViscosity;
 float DeltaTime;
 
+uint GetFromCoordsID(uint2 InCoords)
+{
+    // SV_DispatchThreadID.x * sizeof(FFluidSimulationVertex)
+    return ((InCoords.x * SimulationGridSize) + InCoords.y) * 3;
+}
+
+struct FluidCell
+{
+    float2 Velocity;
+    float Density;
+
+    uint2 Coords;
+    uint ID;
+};
+
+FluidCell GetPreviousCell(uint2 InCoords)
+{
+    const uint ID = GetFromCoordsID(InCoords);
+
+    FluidCell Cell;
+    Cell.Velocity = float2(PreviousFluidData[ID + 0], PreviousFluidData[ID + 1]);
+    Cell.Density = PreviousFluidData[ID + 2];
+    Cell.Coords = InCoords;
+    Cell.ID = ID;
+    return Cell;
+}
+
+FluidCell GetCurrentCell(uint2 InCoords)
+{
+    const uint ID = GetFromCoordsID(InCoords);
+
+    FluidCell Cell;
+    Cell.Velocity = float2(CurrentFluidData[ID + 0], CurrentFluidData[ID + 1]);
+    Cell.Density = CurrentFluidData[ID + 2];
+    Cell.Coords = InCoords;
+    Cell.ID = ID;
+    return Cell;
+}
+
+uint2 GetCoords(uint InThreadID)
+{
+    return uint2(InThreadID / SimulationGridSize, InThreadID % SimulationGridSize);
+}
+
+FluidCell GetPreviousCellFromID(uint InThreadID)
+{
+    const uint2 Coords = GetCoords(InThreadID);
+    return GetPreviousCell(Coords);
+}
+
+FluidCell GetCurrentCellFromID(uint InThreadID)
+{
+    const uint2 Coords = GetCoords(InThreadID);
+    return GetCurrentCell(Coords);
+}
+
+void UpdatePreviousCellData(FluidCell InFluidCell)
+{
+    PreviousFluidData[InFluidCell.ID + 0] = InFluidCell.Velocity.x;
+    PreviousFluidData[InFluidCell.ID + 1] = InFluidCell.Velocity.y;
+    PreviousFluidData[InFluidCell.ID + 2] = InFluidCell.Density;
+}
+
+void UpdateCurrentCellData(FluidCell InFluidCell)
+{
+    CurrentFluidData[InFluidCell.ID + 0] = InFluidCell.Velocity.x;
+    CurrentFluidData[InFluidCell.ID + 1] = InFluidCell.Velocity.y;
+    CurrentFluidData[InFluidCell.ID + 2] = InFluidCell.Density;
+}
+
 [numthreads(1, 1, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
-    // SV_DispatchThreadID.x * sizeof(FFluidSimulationVertex)
-    const uint Current = DTid.x * 3;
+    FluidCell CurrentCell = GetCurrentCellFromID(DTid.x);
 
-    const float2 PreviousVelocity = float2(PreviousFluidData[Current + 0], PreviousFluidData[Current + 1]);
-    const float PreviousDensity = PreviousFluidData[Current + 2];
+    CurrentCell.Velocity -= float2(1.0f, 1.0f) * DeltaTime;
 
-    float2 NextVelocity = PreviousVelocity;
-    float NextDensity = 0.0f;
-
-    CurrentFluidData[Current + 0] = NextVelocity.x;
-    CurrentFluidData[Current + 1] = NextVelocity.y;
-    CurrentFluidData[Current + 2] = NextDensity;
+    UpdateCurrentCellData(CurrentCell);
 }
