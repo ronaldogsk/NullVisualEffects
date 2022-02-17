@@ -3,3 +3,7 @@
 #pragma once
 
 #include "/Engine/Public/Platform.ush"
+
+void MainVS()
+{
+}

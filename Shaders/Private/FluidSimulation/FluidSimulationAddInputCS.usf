@@ -1,0 +1,23 @@
+// Copyright (C) Ronaldo Veloso. All Rights Reserved.
+
+#pragma once
+
+#include "/Engine/Public/Platform.ush"
+#include "FluidSimulationCommon.usf"
+
+RWBuffer<float> CurrentFluidData;
+StructuredBuffer<FluidSimulationAddInput> ForcesDencityData;
+uint SimulationGridSize;
+float SimulationGridSizeRecip;
+
+[numthreads(1, 1, 1)]
+void MainCS(uint3 DTid : SV_DispatchThreadID)
+{
+    FluidSimulationAddInput CurrentInput = ForcesDencityData[DTid.x];
+    FluidCell CurrentCell = GetCell(CurrentInput.Coords, SimulationGridSize, CurrentFluidData);
+
+    CurrentCell.Velocity += CurrentInput.Velocity;
+    CurrentCell.Density += CurrentInput.Density;
+
+    UpdateCellData(CurrentCell, CurrentFluidData);
+}

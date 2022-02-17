@@ -33,9 +33,32 @@ public:
     {}
 };
 
-struct FFluidSimulationForce
+struct FFluidCellInputData
 {
-    //FVector
+public:
+
+    /** Add velocity */
+    FVector2D Velocity;
+
+    /** Add density */
+    float Density;
+
+    /** Add cell */
+    FIntPoint Cell;
+
+    /** Constructor */
+    FFluidCellInputData()
+        : Velocity(FVector2D::ZeroVector)
+        , Density(0.0f)
+        , Cell(FIntPoint::ZeroValue)
+    {}
+
+    /** Constructor */
+    FFluidCellInputData(const FVector2D& InVelocity, const float InDensity, const FIntPoint& InCell)
+        : Velocity(InVelocity)
+        , Density(InDensity)
+        , Cell(InCell)
+    {}
 };
 
 UCLASS()
@@ -83,34 +106,46 @@ public:
     /** Sets the output render target */
     void SetRenderTarget(class UTextureRenderTarget2D* InRenderTarget);
 
+    /** Enqueues data to be added to  */
+    void AddVelocityDensity(const FVector& InLocation, const FVector& InVelocity, const float InViscosity);
+
 private:
 
     /** Updates the fluid */
     void UpdateFluid(const float InDeltaTime);
 
+    /** Add input data */
+    void AddInputData();
+
 private:
+
+    /** Add input forces and density render thread implementation */
+    static void AddInputData_RenderThread(const int32 InSimulationGridSize, const TArray<FFluidCellInputData>& InForcesDensityData, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList);
 
     /** Update fluid render thread implementation */
     static void UpdateFluid_RenderThread(const int32 InSimulationGridSize, const float InFluidDifusion, const float InFluidViscosity, const float InDeltaTime, const FUnorderedAccessViewRHIRef& InCurrentUAV, const FUnorderedAccessViewRHIRef& InPreviousUAV, FRHICommandListImmediate& RHICmdList);
 
     /** Draw to render target render thread implementation */
-    static void DrawToRenderTarget_RenderThread(class UTextureRenderTarget2D* InRenderTarget, const int32 InSimulationGridSize, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList);
+    static void DrawToRenderTarget_RenderThread(class UTextureRenderTarget2D* InRenderTarget, const int32 InSimulationGridSize, const FVertexBufferRHIRef& InVertexBuffer, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList);
 
 protected:
 
     /** Is the render init */
     bool bIsInit;
 
-    /**  */
+    /** Fluid difusion */
     float FluidDifusion;
 
-    /**  */
+    /** Fluid viscosity */
     float FluidViscosity;
 
     /** Output render target */
     class UTextureRenderTarget2D* OutputRenderTarget;
 
 private:
+
+    /** Pending fluid input data to add */
+    TArray<FFluidCellInputData> PendingFluidInput;
 
     /** Simulation grid size */
     int32 SimulationGridSize;
