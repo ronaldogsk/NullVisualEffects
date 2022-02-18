@@ -13,12 +13,39 @@ float FluidDifusion;
 float FluidViscosity;
 float DeltaTime;
 
+void SetBounds()
+{
+}
+
+void LinearSolveCell(uint CellID, inout RWBuffer<float> InCurrentBuffer, inout RWBuffer<float> InPreviousBuffer, float InDiffusion, float InDeltaTime, int IterationsNum, int InSimulationGridSize)
+{
+    const float Amount = InDiffusion * InDeltaTime * InSimulationGridSize * InSimulationGridSize;
+
+    FluidCell CurrentCell = GetCellFromID(CellID, InSimulationGridSize, InPreviousBuffer);
+
+    const int Bounds = InSimulationGridSize - 1;
+    if (CurrentCell.Coords.x > 0 && CurrentCell.Coords.x < Bounds && CurrentCell.Coords.y > 0 && CurrentCell.Coords.y < Bounds)
+    {
+        const FluidCell UpperCell   = GetCell(CurrentCell.Coords + uint2(0, 1), InSimulationGridSize, InPreviousBuffer);
+        const FluidCell BottomCell  = GetCell(CurrentCell.Coords + uint2(0, -1), InSimulationGridSize, InPreviousBuffer);
+        const FluidCell LeftCell    = GetCell(CurrentCell.Coords + uint2(-1, 0), InSimulationGridSize, InPreviousBuffer);
+        const FluidCell RightCell   = GetCell(CurrentCell.Coords + uint2(1, 0), InSimulationGridSize, InPreviousBuffer);
+
+        CurrentCell.Velocity = CurrentCell.Velocity - (Amount * ((UpperCell.Velocity + BottomCell.Velocity + LeftCell.Velocity + RightCell.Velocity) - (CurrentCell.Velocity * 4.0f)));
+        UpdateCellData(CurrentCell, InCurrentBuffer);
+    }
+
+    SetBounds();
+}
+
+void Diffuse()
+{
+
+}
+
 [numthreads(1, 1, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
-    FluidCell CurrentCell = GetCellFromID(DTid.x, SimulationGridSize, CurrentFluidData);
-
-    CurrentCell.Velocity -= float2(1.0f, 1.0f) * DeltaTime;
-
-    UpdateCellData(CurrentCell, CurrentFluidData);
+    const uint CurrentCellID = DTid.x;
+    LinearSolveCell(CurrentCellID, CurrentFluidData, PreviousFluidData, 0.0001f, DeltaTime, 1, SimulationGridSize);
 }

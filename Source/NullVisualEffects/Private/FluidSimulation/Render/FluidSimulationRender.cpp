@@ -10,7 +10,7 @@
 #include "Library/NullVisualEffectsFunctionLibrary.h"
 #include "RenderGraphUtils.h"
 #include "RenderTargetPool.h"
-
+#include "Library/NullVisualEffectsFunctionLibrary.h"
 
 const FVertexDeclarationElementList UFluidSimulationRender::VertexSimulationDataDeclaration
 {
@@ -47,6 +47,7 @@ void UFluidSimulationRender::Tick(float DeltaTime)
 
     if (bIsInit)
     {
+        UNullVisualEffectsFunctionLibrary::CopyVertexBuffer(VertexBuffer, SpareVertexBuffer);
         AddVelocityDensity(FVector::ZeroVector, FVector::OneVector, 0.0f);
         AddInputData();
         UpdateFluid(DeltaTime);
