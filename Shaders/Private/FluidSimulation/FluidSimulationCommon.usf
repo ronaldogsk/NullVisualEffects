@@ -10,6 +10,7 @@ struct FluidCell
     float Density;
     uint2 Coords;
     uint ID;
+    float Intensity;
 };
 
 struct FluidSimulationAddInput
@@ -22,7 +23,7 @@ struct FluidSimulationAddInput
 uint GetFromCoordsID(uint2 InCoords, uint InSimulationGridSize)
 {
     // SV_DispatchThreadID.x * sizeof(FFluidSimulationVertex)
-    return ((InCoords.y * InSimulationGridSize) + InCoords.x) * 3;
+    return ((InCoords.y * InSimulationGridSize) + InCoords.x) * 5;
 }
 
 FluidCell GetCell(uint2 InCoords, uint InSimulationGridSize, inout RWBuffer<float> InBuffer)
@@ -30,11 +31,33 @@ FluidCell GetCell(uint2 InCoords, uint InSimulationGridSize, inout RWBuffer<floa
     const uint ID = GetFromCoordsID(InCoords, InSimulationGridSize);
 
     FluidCell Cell;
-    Cell.Velocity = float2(InBuffer[ID + 0], InBuffer[ID + 1]);
-    Cell.Density = InBuffer[ID + 2];
+    Cell.Velocity = float2(InBuffer[ID + 2], InBuffer[ID + 3]);
+    Cell.Density = InBuffer[ID + 4];
     Cell.Coords = InCoords;
     Cell.ID = ID;
+    Cell.Intensity = 1.0f;
     return Cell;
+}
+
+void GetCellsAccurate(float2 InCoords, uint InSimulationSize, inout RWBuffer<float> InBuffer, out FluidCell OutCells[4])
+{
+    float2 Frac = frac(InCoords);
+    uint2 Raw = uint2(InCoords.x, InCoords.y);
+
+    FluidCell CellOne   = GetCell(Raw, InSimulationSize, InBuffer);
+    FluidCell CellTwo   = GetCell(Raw + uint2(0, 1), InSimulationSize, InBuffer);
+    FluidCell CellThree = GetCell(Raw + uint2(1, 0), InSimulationSize, InBuffer);
+    FluidCell CellFour  = GetCell(Raw + uint2(1, 1), InSimulationSize, InBuffer);
+
+    CellOne.Intensity   = Frac.x;
+    CellTwo.Intensity   = Frac.y;
+    CellThree.Intensity = 1 - Frac.y;
+    CellFour.Intensity  = 1 - Frac.y;
+
+    OutCells[0] = CellOne;
+    OutCells[1] = CellTwo;
+    OutCells[2] = CellThree;
+    OutCells[3] = CellFour;
 }
 
 uint2 GetCoords(uint InThreadID, uint InSimulationGridSize)
@@ -50,7 +73,7 @@ FluidCell GetCellFromID(uint InThreadID, uint InSimulationGridSize, inout RWBuff
 
 void UpdateCellData(FluidCell InFluidCell, inout RWBuffer<float> InBuffer)
 {
-    InBuffer[InFluidCell.ID + 0] = InFluidCell.Velocity.x;
-    InBuffer[InFluidCell.ID + 1] = InFluidCell.Velocity.y;
-    InBuffer[InFluidCell.ID + 2] = InFluidCell.Density;
+    InBuffer[InFluidCell.ID + 2] = InFluidCell.Velocity.x;
+    InBuffer[InFluidCell.ID + 3] = InFluidCell.Velocity.y;
+    InBuffer[InFluidCell.ID + 4] = InFluidCell.Density;
 }

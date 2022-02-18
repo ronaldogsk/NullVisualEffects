@@ -1,7 +1,7 @@
 // Copyright (C) Ronaldo Veloso. All Rights Reserved.
 
-#include "FluidSimulation\FluidSimulationActor.h"
 #include "FluidSimulation\FluidSimulationBodyComponent.h"
+#include "FluidSimulation\FluidSimulationActor.h"
 
 UFluidSimulationBodyComponent::UFluidSimulationBodyComponent()
     : CurrentLocation(FVector::ZeroVector)

@@ -13,14 +13,13 @@ float SimulationGridSizeRecip;
 void MainCS(uint3 DTid : SV_DispatchThreadID, uint3 GTid : SV_GroupThreadID)
 {
     // SV_DispatchThreadID.x * sizeof(FFluidSimulationVertex)
-    const uint Current = DTid.x * 3;
+    const uint Current = DTid.x * 5;
 
     uint x = DTid.x / SimulationGridSize;
     uint y = DTid.x % SimulationGridSize;
 
-    const float2 PreviousVelocity = float2(FluidData[Current + 0], FluidData[Current + 1]);
-    const float PreviousDensity = FluidData[Current + 2];
+    const float2 PreviousVelocity = float2(FluidData[Current + 2], FluidData[Current + 3]);
+    const float PreviousDensity = FluidData[Current + 4];
 
     OutTexture[uint2(x,y)] = float4(PreviousVelocity, 0.0f, 1.0f);
-
 }

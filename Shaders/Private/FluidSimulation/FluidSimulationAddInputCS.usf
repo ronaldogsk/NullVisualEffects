@@ -6,7 +6,7 @@
 #include "FluidSimulationCommon.usf"
 
 RWBuffer<float> CurrentFluidData;
-StructuredBuffer<FluidSimulationAddInput> ForcesDencityData;
+RWStructuredBuffer<FluidSimulationAddInput> ForcesDencityData;
 uint SimulationGridSize;
 float SimulationGridSizeRecip;
 

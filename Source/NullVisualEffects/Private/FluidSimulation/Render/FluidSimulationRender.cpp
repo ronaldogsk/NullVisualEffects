@@ -14,8 +14,9 @@
 
 const FVertexDeclarationElementList UFluidSimulationRender::VertexSimulationDataDeclaration
 {
-    FVertexElement(0, offsetof(FFluidSimulationVertex, Velocity)    , EVertexElementType::VET_Float2, 0, sizeof(FFluidSimulationVertex)),
-    FVertexElement(0, offsetof(FFluidSimulationVertex, Density)     , EVertexElementType::VET_Float1, 1, sizeof(FFluidSimulationVertex))
+    FVertexElement(0, offsetof(FFluidSimulationVertex, Coords)      , EVertexElementType::VET_Float2, 0, sizeof(FFluidSimulationVertex)),
+    FVertexElement(0, offsetof(FFluidSimulationVertex, Velocity)    , EVertexElementType::VET_Float2, 1, sizeof(FFluidSimulationVertex)),
+    FVertexElement(0, offsetof(FFluidSimulationVertex, Density)     , EVertexElementType::VET_Float1, 2, sizeof(FFluidSimulationVertex))
 };
 
 UFluidSimulationRender::UFluidSimulationRender()
@@ -98,13 +99,14 @@ bool UFluidSimulationRender::Init(const int32 InSimulationGridSize)
             {
                 TResourceArray<FFluidSimulationVertex, VERTEXBUFFER_ALIGNMENT> VertexBufferData;
 
-                const float SimulationGridRecip = 1.0f / SimulationGridSize;
+                const float CoordsRecip = 1.0f / (SimulationGridSize - 1);
                 for (int32 i = 0; i < SimulationGridSize; ++i)
                 {
                     for (int32 j = 0; j < SimulationGridSize; ++j)
                     {
                         const FVector& RandomVector = FMath::VRand();
-                        VertexBufferData.Emplace(FFluidSimulationVertex(FVector2D(RandomVector).GetSafeNormal(), 0.0f));
+                        const FVector2D& CurrentCorrds = FVector2D(CoordsRecip * static_cast<float>(i), CoordsRecip * static_cast<float>(j));
+                        VertexBufferData.Emplace(FFluidSimulationVertex(CurrentCorrds, FVector2D(RandomVector).GetSafeNormal(), 0.0f));
                     }
                 }
 
@@ -159,6 +161,8 @@ void UFluidSimulationRender::AddInputData()
             AddInputData_RenderThread(SimulationGridSize, InputData, CurrentUAV, RHICmdList);
         }
     );
+
+    PendingFluidInput.Empty();
 }
 
 void UFluidSimulationRender::DrawToRenderTarget(class UTextureRenderTarget2D* InRenderTarget)
@@ -199,7 +203,7 @@ void UFluidSimulationRender::AddInputData_RenderThread(const int32 InSimulationG
 
     if (InForcesDensityData.Num() > 0)
     {
-        const uint32 BufferUsage = BUF_Static | BUF_UnorderedAccess | BUF_ShaderResource | BUF_StructuredBuffer;
+        const uint32 BufferUsage = BUF_Static | BUF_UnorderedAccess | BUF_ShaderResource;
 
         TResourceArray<FFluidCellInputData> BufferData(false);
         for (const FFluidCellInputData& Element : InForcesDensityData)

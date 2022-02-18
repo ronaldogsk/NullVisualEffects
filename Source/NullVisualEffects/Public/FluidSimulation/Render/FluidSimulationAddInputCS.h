@@ -17,7 +17,7 @@ public:
 
     BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
         SHADER_PARAMETER_UAV(RWBuffer<float>, CurrentFluidData)
-        SHADER_PARAMETER_UAV(StructuredBuffer<FFluidCellInputData>, ForcesDencityData)
+        SHADER_PARAMETER_UAV(RWStructuredBuffer<FFluidCellInputData>, ForcesDencityData)
         SHADER_PARAMETER(int32, SimulationGridSize)
         SHADER_PARAMETER(float, SimulationGridSizeRecip)
     END_SHADER_PARAMETER_STRUCT()

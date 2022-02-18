@@ -10,6 +10,9 @@ struct FFluidSimulationVertex
 {
 public:
 
+    /** Vertex coords */
+    FVector2D Coords;
+
     /** Velocity */
     FVector2D Velocity;
 
@@ -18,17 +21,20 @@ public:
 
     /** Constructor */
     FFluidSimulationVertex()
-        : Velocity(FVector2D::ZeroVector)
+        : Coords(FVector2D::ZeroVector)
+        , Velocity(FVector2D::ZeroVector)
         , Density(0.0f)
     {}
 
     /** Constructor */
     FFluidSimulationVertex
     (
+        const FVector2D& InCoords,
         const FVector2D& InVelocity,
         const float InDensity
     )
-        : Velocity(InVelocity)
+        : Coords(InCoords)
+        , Velocity(InVelocity)
         , Density(InDensity)
     {}
 };
