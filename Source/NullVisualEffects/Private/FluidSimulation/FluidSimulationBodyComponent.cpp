@@ -5,6 +5,7 @@
 
 UFluidSimulationBodyComponent::UFluidSimulationBodyComponent()
     : MinimumUpdateDistance(5.0f)
+    , Strength(1.0f)
     , CurrentLocation(FVector::ZeroVector)
     , PreviousLocation(FVector::ZeroVector)
     , SecondPreviousLocation(FVector::ZeroVector)
@@ -24,7 +25,6 @@ void UFluidSimulationBodyComponent::BeginPlay()
 
     OnComponentBeginOverlap.AddDynamic(this, &UFluidSimulationBodyComponent::ComponentBeginOverlap);
     OnComponentEndOverlap.AddDynamic(this, &UFluidSimulationBodyComponent::ComponentEndOverlap);
-
 }
 
 void UFluidSimulationBodyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

@@ -14,10 +14,14 @@ float SimulationGridSizeRecip;
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
     FluidSimulationAddInput CurrentInput = ForcesDencityData[DTid.x];
-    FluidCell CurrentCell = GetCell(CurrentInput.Coords, SimulationGridSize, CurrentFluidData);
 
-    CurrentCell.Velocity += CurrentInput.Velocity;
-    CurrentCell.Density += CurrentInput.Density;
+    if(CurrentInput.Coords.x >= 0 && CurrentInput.Coords.x <= SimulationGridSize && CurrentInput.Coords.y >= 0 && CurrentInput.Coords.y <= SimulationGridSize)
+    {
+        FluidCell CurrentCell = GetCell(CurrentInput.Coords, SimulationGridSize, CurrentFluidData);
 
-    UpdateCellData(CurrentCell, CurrentFluidData);
+        CurrentCell.Velocity = CurrentInput.Velocity;
+        CurrentCell.Density = CurrentInput.Density;
+
+        UpdateCellData(CurrentCell, CurrentFluidData);
+    }
 }

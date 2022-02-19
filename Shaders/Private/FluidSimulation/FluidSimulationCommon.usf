@@ -17,13 +17,14 @@ struct FluidSimulationAddInput
 {
     float2 Velocity;
     float Density;
+    float Radius;
     int2 Coords;
 };
 
 uint GetFromCoordsID(uint2 InCoords, uint InSimulationGridSize)
 {
     // SV_DispatchThreadID.x * sizeof(FFluidSimulationVertex)
-    return ((InCoords.y * InSimulationGridSize) + InCoords.x) * 5;
+    return ((InCoords.x * InSimulationGridSize) + InCoords.y) * 5;
 }
 
 FluidCell GetCell(uint2 InCoords, uint InSimulationGridSize, inout RWBuffer<float> InBuffer)

@@ -49,7 +49,7 @@ void UFluidSimulationRender::Tick(float DeltaTime)
     {
         UNullVisualEffectsFunctionLibrary::CopyVertexBuffer(VertexBuffer, SpareVertexBuffer);
         AddInputData();
-        UpdateFluid(DeltaTime);
+        //UpdateFluid(DeltaTime);
 
         if (OutputRenderTarget != nullptr)
         {
@@ -106,7 +106,7 @@ bool UFluidSimulationRender::Init(const int32 InSimulationGridSize)
                     {
                         const FVector& RandomVector = FMath::VRand();
                         const FVector2D& CurrentCorrds = FVector2D(CoordsRecip * static_cast<float>(i), CoordsRecip * static_cast<float>(j));
-                        VertexBufferData.Emplace(FFluidSimulationVertex(CurrentCorrds, FVector2D(RandomVector).GetSafeNormal(), 0.0f));
+                        VertexBufferData.Emplace(FFluidSimulationVertex(CurrentCorrds, FVector2D::ZeroVector/*FVector2D(RandomVector).GetSafeNormal()*/, 0.0f));
                     }
                 }
 
@@ -192,8 +192,8 @@ void UFluidSimulationRender::SetRenderTarget(UTextureRenderTarget2D* InRenderTar
 
 void UFluidSimulationRender::AddVelocityDensity(const FVector& InLocation, const FVector& InVelocity, const float InRadius, const float InViscosity)
 {
-    const FVector& Location = InLocation * static_cast<float>(SimulationGridSize);
-    PendingFluidInput.Emplace(FFluidCellInputData(FVector2D(InVelocity), 0.0f, InRadius * static_cast<float>(SimulationGridSize), FIntPoint(Location.X, Location.Y))); // Now hardcoded to the middle, to be removed.
+    const FVector& Location = ((InLocation + FVector::OneVector) * 0.5f) * static_cast<float>(SimulationGridSize);
+    PendingFluidInput.Emplace(FFluidCellInputData(FVector2D(InVelocity), 0.0f, InRadius * static_cast<float>(SimulationGridSize), FIntPoint(SimulationGridSize - Location.X, SimulationGridSize -Location.Y)));
 }
 
 void UFluidSimulationRender::AddInputData_RenderThread(const int32 InSimulationGridSize, const TArray<FFluidCellInputData>& InForcesDensityData, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList)
