@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Components/ActorComponent.h"
+#include "Components/SphereComponent.h"
 #include "CoreMinimal.h"
 #include "FluidSimulationBodyComponent.generated.h"
 
@@ -10,7 +10,7 @@
  * 
  */
 UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class NULLVISUALEFFECTS_API UFluidSimulationBodyComponent : public USceneComponent
+class NULLVISUALEFFECTS_API UFluidSimulationBodyComponent : public USphereComponent
 {
     GENERATED_BODY()
 
@@ -23,13 +23,26 @@ public:
     ~UFluidSimulationBodyComponent();
 
     //~ Begin USceneComponent interface
+    virtual void BeginPlay() override;
     virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     //~ End USceneComponent interface
+
+private:
+
+    UFUNCTION()
+    void ComponentBeginOverlap(class UPrimitiveComponent* InOverlappedComp, class AActor* InOtherActor, class UPrimitiveComponent* InOtherComp, int32 InOtherBodyIndex, bool InFromSweep, const FHitResult& InSweepResult);
+
+    UFUNCTION()
+    void ComponentEndOverlap(class UPrimitiveComponent* InOverlappedComp, class AActor* InOtherActor, class UPrimitiveComponent* InOtherComp, int32 InOtherBodyIndex);
 
 public:
 
-    /** Register body component action */
-    void RegisterComponent(class AFluidSimulationActor* InSimulationActor);
+    UPROPERTY(VisibleAnywhere, Category = "FluidSimulation")
+    float MinimumUpdateDistance;
+
+    UPROPERTY(VisibleAnywhere, Category = "FluidSimulation")
+    float Strength;
 
 private:
 
@@ -44,5 +57,8 @@ private:
      * In some cases in the future might be needed for sake of accuracy
      */
     FVector SecondPreviousLocation;
+
+    /**  */
+    class AFluidSimulationActor* CurrentUpdateActor;
 
 };

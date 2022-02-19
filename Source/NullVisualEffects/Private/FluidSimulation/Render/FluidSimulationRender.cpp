@@ -48,7 +48,6 @@ void UFluidSimulationRender::Tick(float DeltaTime)
     if (bIsInit)
     {
         UNullVisualEffectsFunctionLibrary::CopyVertexBuffer(VertexBuffer, SpareVertexBuffer);
-        AddVelocityDensity(FVector::ZeroVector, FVector::OneVector, 0.0f);
         AddInputData();
         UpdateFluid(DeltaTime);
 
@@ -191,9 +190,10 @@ void UFluidSimulationRender::SetRenderTarget(UTextureRenderTarget2D* InRenderTar
     OutputRenderTarget = InRenderTarget;
 }
 
-void UFluidSimulationRender::AddVelocityDensity(const FVector& InLocation, const FVector& InVelocity, const float InViscosity)
+void UFluidSimulationRender::AddVelocityDensity(const FVector& InLocation, const FVector& InVelocity, const float InRadius, const float InViscosity)
 {
-    PendingFluidInput.Emplace(FFluidCellInputData(FVector2D(InVelocity), 0.0f, FIntPoint(127, 127))); // Now hardcoded to the middle, to be removed.
+    const FVector& Location = InLocation * static_cast<float>(SimulationGridSize);
+    PendingFluidInput.Emplace(FFluidCellInputData(FVector2D(InVelocity), 0.0f, InRadius * static_cast<float>(SimulationGridSize), FIntPoint(Location.X, Location.Y))); // Now hardcoded to the middle, to be removed.
 }
 
 void UFluidSimulationRender::AddInputData_RenderThread(const int32 InSimulationGridSize, const TArray<FFluidCellInputData>& InForcesDensityData, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList)

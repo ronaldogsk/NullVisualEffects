@@ -49,6 +49,9 @@ public:
     /** Add density */
     float Density;
 
+    /** Add density */
+    float Radius;
+
     /** Add cell */
     FIntPoint Cell;
 
@@ -56,13 +59,15 @@ public:
     FFluidCellInputData()
         : Velocity(FVector2D::ZeroVector)
         , Density(0.0f)
+        , Radius(0.0f)
         , Cell(FIntPoint::ZeroValue)
     {}
 
     /** Constructor */
-    FFluidCellInputData(const FVector2D& InVelocity, const float InDensity, const FIntPoint& InCell)
+    FFluidCellInputData(const FVector2D& InVelocity, const float InDensity, const float InRadius, const FIntPoint& InCell)
         : Velocity(InVelocity)
         , Density(InDensity)
+        , Radius(InRadius)
         , Cell(InCell)
     {}
 };
@@ -113,7 +118,7 @@ public:
     void SetRenderTarget(class UTextureRenderTarget2D* InRenderTarget);
 
     /** Enqueues data to be added to  */
-    void AddVelocityDensity(const FVector& InLocation, const FVector& InVelocity, const float InViscosity);
+    void AddVelocityDensity(const FVector& InLocation, const FVector& InVelocity, const float InRadius, const float InViscosity);
 
 private:
 

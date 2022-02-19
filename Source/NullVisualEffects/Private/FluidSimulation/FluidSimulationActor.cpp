@@ -9,6 +9,9 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 
+
+#include "DrawDebugHelpers.h"
+
 AFluidSimulationActor::AFluidSimulationActor()
     : SimulationGridSize(256)
     , RenderTargetSize(2048)
@@ -42,6 +45,8 @@ AFluidSimulationActor::~AFluidSimulationActor()
 void AFluidSimulationActor::BeginPlay()
 {
     Super::BeginPlay();
+
+    InitResources();
 }
 
 void AFluidSimulationActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -85,7 +90,7 @@ void AFluidSimulationActor::InitResources()
     }
 }
 
-void AFluidSimulationActor::RegisterBody(const FVector& InCurrentLocation, const FVector& InPreviousLocation, const FVector& InVelocity, const float InStrength)
+void AFluidSimulationActor::RegisterBody(const FVector& InCurrentLocation, const FVector& InPreviousLocation, const FVector& InVelocity, const float InRadius, const float InStrength)
 {
     const FVector& CurrentLocationDelta = GetActorLocation() - InCurrentLocation;
     const FVector& CurrentLocationNormalizedDelta = static_cast<FVector>(CurrentLocationDelta / SimulationGridSize); // #TODO: Implement size squared.
@@ -97,6 +102,10 @@ void AFluidSimulationActor::RegisterBody(const FVector& InCurrentLocation, const
     {
 
     }
+
+#if !UE_BUILD_SHIPPING
+    DrawDebugDirectionalArrow(GetWorld(), InPreviousLocation, InCurrentLocation, 0.0f, FColor::Red, false, 1.0f, 0, 10.0f);
+#endif
 }
 
 void AFluidSimulationActor::Draw()
