@@ -16,8 +16,6 @@ struct FluidCell
 struct FluidSimulationAddInput
 {
     float2 Velocity;
-    float Density;
-    float Radius;
     int2 Coords;
 };
 

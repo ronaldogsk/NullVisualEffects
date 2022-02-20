@@ -11,6 +11,7 @@
 #include "RenderGraphUtils.h"
 #include "RenderTargetPool.h"
 #include "Library/NullVisualEffectsFunctionLibrary.h"
+#include "Math/UnrealMathUtility.h"
 
 const FVertexDeclarationElementList UFluidSimulationRender::VertexSimulationDataDeclaration
 {
@@ -192,8 +193,23 @@ void UFluidSimulationRender::SetRenderTarget(UTextureRenderTarget2D* InRenderTar
 
 void UFluidSimulationRender::AddVelocityDensity(const FVector& InLocation, const FVector& InVelocity, const float InRadius, const float InViscosity)
 {
+    // #TODO : Find a better way to draw the velocities and change it from a square to a circle
+
     const FVector& Location = ((InLocation + FVector::OneVector) * 0.5f) * static_cast<float>(SimulationGridSize);
-    PendingFluidInput.Emplace(FFluidCellInputData(FVector2D(InVelocity), 0.0f, InRadius * static_cast<float>(SimulationGridSize), FIntPoint(SimulationGridSize - Location.X, SimulationGridSize -Location.Y)));
+    const float RadiusGridScale = InRadius * static_cast<float>(SimulationGridSize);
+
+    const int32 MinimumX = FMath::Clamp(static_cast<int32>(Location.X - RadiusGridScale), 0, SimulationGridSize);
+    const int32 MinimumY = FMath::Clamp(static_cast<int32>(Location.Y - RadiusGridScale), 0, SimulationGridSize);
+    const int32 MaximumX = FMath::Clamp(static_cast<int32>(Location.X + RadiusGridScale), 0, SimulationGridSize);
+    const int32 MaximumY = FMath::Clamp(static_cast<int32>(Location.Y + RadiusGridScale), 0, SimulationGridSize);
+
+    for (int i = MinimumX; i < MaximumX; ++i)
+    {
+        for (int j = MinimumY; j < MaximumY; ++j)
+        {
+            PendingFluidInput.Emplace(FFluidCellInputData(FVector2D(InVelocity), FIntPoint(SimulationGridSize - i , SimulationGridSize - j)));
+        }
+    }
 }
 
 void UFluidSimulationRender::AddInputData_RenderThread(const int32 InSimulationGridSize, const TArray<FFluidCellInputData>& InForcesDensityData, const FUnorderedAccessViewRHIRef& InBufferUAV, FRHICommandListImmediate& RHICmdList)
