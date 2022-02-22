@@ -38,10 +38,10 @@ private:
 
 public:
 
-    UPROPERTY(VisibleAnywhere, Category = "FluidSimulation")
+    UPROPERTY(EditAnywhere, Category = "FluidSimulation")
     float MinimumUpdateDistance;
 
-    UPROPERTY(VisibleAnywhere, Category = "FluidSimulation")
+    UPROPERTY(EditAnywhere, Category = "FluidSimulation")
     float Strength;
 
 private:

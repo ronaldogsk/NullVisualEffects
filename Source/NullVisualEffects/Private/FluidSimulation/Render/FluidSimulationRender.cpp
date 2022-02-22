@@ -33,7 +33,6 @@ UFluidSimulationRender::~UFluidSimulationRender()
 void UFluidSimulationRender::BeginDestroy()
 {
     Super::BeginDestroy();
-
     RenderFence.Wait();
 }
 
@@ -50,7 +49,7 @@ void UFluidSimulationRender::Tick(float DeltaTime)
     {
         UNullVisualEffectsFunctionLibrary::CopyVertexBuffer(VertexBuffer, SpareVertexBuffer);
         AddInputData();
-        //UpdateFluid(DeltaTime);
+        UpdateFluid(DeltaTime);
 
         if (OutputRenderTarget != nullptr)
         {
@@ -107,7 +106,7 @@ bool UFluidSimulationRender::Init(const int32 InSimulationGridSize)
                     {
                         const FVector& RandomVector = FMath::VRand();
                         const FVector2D& CurrentCorrds = FVector2D(CoordsRecip * static_cast<float>(i), CoordsRecip * static_cast<float>(j));
-                        VertexBufferData.Emplace(FFluidSimulationVertex(CurrentCorrds, FVector2D::ZeroVector/*FVector2D(RandomVector).GetSafeNormal()*/, 0.0f));
+                        VertexBufferData.Emplace(FFluidSimulationVertex(CurrentCorrds, FVector2D::ZeroVector, 0.0f));
                     }
                 }
 
@@ -155,7 +154,7 @@ void UFluidSimulationRender::AddInputData()
         [
             SimulationGridSize  = SimulationGridSize,
             InputData           = PendingFluidInput,
-            CurrentUAV          = VertexBufferUAV
+            CurrentUAV          = SpareVertexBufferUAV
         ]
         (FRHICommandListImmediate& RHICmdList)
         {
@@ -207,7 +206,7 @@ void UFluidSimulationRender::AddVelocityDensity(const FVector& InLocation, const
     {
         for (int j = MinimumY; j < MaximumY; ++j)
         {
-            PendingFluidInput.Emplace(FFluidCellInputData(FVector2D(InVelocity), FIntPoint(SimulationGridSize - i , SimulationGridSize - j)));
+            PendingFluidInput.Emplace(FFluidCellInputData(FVector2D(InVelocity.X, InVelocity.Y), FIntPoint(SimulationGridSize - i , SimulationGridSize - j)));
         }
     }
 }

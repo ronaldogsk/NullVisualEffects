@@ -105,14 +105,12 @@ void AFluidSimulationActor::RegisterBody(const FVector& InCurrentLocation, const
 
     if (CurrentLocationNormalizedDelta.X <= 1.0f && CurrentLocationNormalizedDelta.X >= -1.0f && CurrentLocationNormalizedDelta.Y <= 1.0f && CurrentLocationNormalizedDelta.Y >= -1.0f)
     {
-        FluidSimulationRender->AddVelocityDensity(CurrentLocationDelta,/* InVelocity * InStrength*/ FVector::OneVector, Radius.X, 1.0f);
+        FluidSimulationRender->AddVelocityDensity(CurrentLocationDelta, InVelocity * InStrength, Radius.X, 1.0f);
     }
-
-    UKismetSystemLibrary::PrintString(GetWorld(), FString::Printf(TEXT("%f %f %f"), CurrentLocationDelta.X, CurrentLocationDelta.Y, CurrentLocationDelta.Z));
 
 #if !UE_BUILD_SHIPPING
 
-    DrawDebugDirectionalArrow(GetWorld(), InPreviousLocation, InCurrentLocation, 0.0f, FColor::Red, false, 1.0f, 0, 10.0f);
+    DrawDebugDirectionalArrow(GetWorld(), InCurrentLocation, InCurrentLocation + (InVelocity * InStrength), 0.0f, FColor::Red, false, 1.0f, 0, 10.0f);
 #endif
 }
 

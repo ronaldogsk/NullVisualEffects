@@ -21,5 +21,5 @@ void MainCS(uint3 DTid : SV_DispatchThreadID, uint3 GTid : SV_GroupThreadID)
     const float2 PreviousVelocity = float2(FluidData[Current + 2], FluidData[Current + 3]);
     const float PreviousDensity = FluidData[Current + 4];
 
-    OutTexture[uint2(x,y)] = float4(PreviousVelocity, 0.0f, 1.0f);
+    OutTexture[uint2(x, y)] = float4(abs(PreviousVelocity), 0.0f, 1.0f);
 }
